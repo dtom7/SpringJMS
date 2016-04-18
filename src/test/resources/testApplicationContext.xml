@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:tx="http://www.springframework.org/schema/tx" xmlns:amq="http://activemq.apache.org/schema/core"
+   xmlns:jms="http://www.springframework.org/schema/jms"
+   xsi:schemaLocation="http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-4.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+   <amq:broker useJmx="false" persistent="false">
+      <amq:transportConnectors>
+         <amq:transportConnector uri="tcp://localhost:61616" />
+      </amq:transportConnectors>
+   </amq:broker>
+
+   <amq:connectionFactory id="connectionFactory"
+      brokerURL="vm://localhost" />
+
+   <bean id="cachingConnectionFactory"
+      class="org.springframework.jms.connection.CachingConnectionFactory">
+      <property name="targetConnectionFactory" ref="connectionFactory" />
+   </bean>
+
+   <amq:queue id="destination" physicalName="queueDestination" />
+
+   <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+      <constructor-arg ref="cachingConnectionFactory" />
+      <property name="defaultDestination" ref="destination" />
+      <!-- <property name="sessionAcknowledgeModeName" value="AUTO_ACKNOWLEDGE"/> -->
+      <property name="sessionTransacted" value="true" />
+   </bean>
+
+   <bean id="jmsTxManager"
+      class="org.springframework.jms.connection.JmsTransactionManager">
+      <property name="connectionFactory" ref="cachingConnectionFactory" />
+   </bean>
+
+   <tx:annotation-driven transaction-manager="jmsTxManager" />
+
+   <context:component-scan base-package="com.example.jms" />
+
+</beans>

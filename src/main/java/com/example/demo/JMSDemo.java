@@ -14,10 +14,17 @@ public class JMSDemo {
 	public static void main(String[] args) {
 
 		logger.info("Starting ..");
-		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
-		MessageSender messageSender = applicationContext.getBean("messageSenderImpl", MessageSender.class);
-		messageSender.sendMessage("Test Message !!!");
 		
+		try(ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml")) {
+			MessageSender messageSender = context.getBean("messageSenderImpl", MessageSender.class);
+			messageSender.sendMessage("Test Message !!!");
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 
 }
